@@ -2,13 +2,13 @@
 
 Neighborhood **café + bakery** small-business site: full-bleed shop photos, menu, hours, location, and catering request. Built as a portfolio piece with a strong first-viewport brand test.
 
-**Live (after Pages enable):** [https://achrafbennanizia.github.io/latch-bakery/](https://achrafbennanizia.github.io/latch-bakery/)
+**Live:** [https://achrafbennanizia.github.io/Latch/](https://achrafbennanizia.github.io/Latch/)
 
 ## Stack
 - Next.js (App Router) + TypeScript + Tailwind CSS v4
 - Motion for section entrances
 - Lenis (desktop) + ~93% threshold section snap + progress rail
-- Static export → GitHub Pages (`/latch-bakery`)
+- Static export → GitHub Pages (`/Latch`)
 
 ## Design
 - Brand-first hero: **LATCH** as the dominant signal on a full-bleed storefront photo

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "build:pages": "GITHUB_PAGES=true NEXT_PUBLIC_BASE_PATH=/latch-bakery next build"
+    "build:pages": "GITHUB_PAGES=true NEXT_PUBLIC_BASE_PATH=/Latch next build"
   },
   "dependencies": {
     "lenis": "^1.3.26",
