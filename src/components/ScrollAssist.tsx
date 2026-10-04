@@ -1,0 +1,251 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useReducedMotion,
+} from "motion/react";
+import { SECTIONS, type SectionId } from "@/lib/sections";
+import {
+  isProgrammaticScroll,
+  prefersReducedMotion,
+  smoothScrollToId,
+} from "@/lib/scroll-to";
+
+/** Finish the jump once ~93% of the way to the target section */
+const SNAP_AT = 0.93;
+const SNAP_DURATION = 0.95;
+const SNAP_COOLDOWN_MS = 700;
+
+function goToSection(id: string, duration = 1.6) {
+  smoothScrollToId(id, duration);
+}
+
+type Top = { id: SectionId; top: number };
+
+function measureTops(): Top[] {
+  return SECTIONS.map((s) => {
+    const el = document.getElementById(s.id);
+    return el ? { id: s.id, top: el.offsetTop } : null;
+  }).filter((x): x is Top => Boolean(x));
+}
+
+let lastY = 0;
+let scrollDir: 1 | -1 | 0 = 0;
+let cachedTops: Top[] = [];
+let lastSnapAt = 0;
+
+function maybeThresholdSnap() {
+  if (isProgrammaticScroll() || prefersReducedMotion()) return;
+  if (performance.now() - lastSnapAt < SNAP_COOLDOWN_MS) return;
+
+  const tops = cachedTops;
+  if (tops.length < 2) return;
+  const y = window.scrollY;
+
+  let i = 0;
+  for (let n = 0; n < tops.length; n++) {
+    if (y >= tops[n].top) i = n;
+  }
+
+  const snap = (id: SectionId) => {
+    lastSnapAt = performance.now();
+    goToSection(id, SNAP_DURATION);
+  };
+
+  if (scrollDir >= 0 && i < tops.length - 1) {
+    const a = tops[i].top;
+    const b = tops[i + 1].top;
+    const span = b - a;
+    if (span >= 80 && (y - a) / span >= SNAP_AT && y < b - 2) {
+      snap(tops[i + 1].id);
+      return;
+    }
+  }
+
+  if (scrollDir <= 0 && i < tops.length - 1) {
+    const a = tops[i].top;
+    const b = tops[i + 1].top;
+    const span = b - a;
+    if (span >= 80 && (b - y) / span >= SNAP_AT && y > a + 2) {
+      snap(tops[i].id);
+      return;
+    }
+  }
+
+  if (scrollDir <= 0 && i === tops.length - 1 && i > 0) {
+    const curr = tops[i].top;
+    const prev = tops[i - 1].top;
+    const span = curr - prev;
+    if (span >= 80 && y < curr && (curr - y) / span >= SNAP_AT && y > prev + 2) {
+      snap(tops[i - 1].id);
+    }
+  }
+}
+
+export function ScrollAssist() {
+  const reduced = useReducedMotion();
+  const [active, setActive] = useState<SectionId>("top");
+  const [hint, setHint] = useState(true);
+  const progressMv = useMotionValue(0);
+  const progress = useSpring(progressMv, {
+    stiffness: reduced ? 400 : 120,
+    damping: reduced ? 40 : 28,
+    mass: 0.6,
+  });
+
+  useEffect(() => {
+    let raf = 0;
+    let settle = 0;
+    let ticking = false;
+    let hintCleared = false;
+
+    const refreshTops = () => {
+      cachedTops = measureTops();
+    };
+
+    const read = () => {
+      ticking = false;
+      const y = window.scrollY;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      progressMv.set(max > 0 ? Math.min(1, y / max) : 0);
+
+      if (!hintCleared && y > window.innerHeight * 0.45) {
+        hintCleared = true;
+        setHint(false);
+      }
+
+      const mid = y + window.innerHeight * 0.4;
+      let best: SectionId = "top";
+      let bestDist = Infinity;
+      for (const section of cachedTops) {
+        const d = Math.abs(section.top - mid);
+        if (d < bestDist) {
+          bestDist = d;
+          best = section.id;
+        }
+      }
+      setActive((prev) => (prev === best ? prev : best));
+    };
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      const dy = y - lastY;
+      if (Math.abs(dy) > 0.5) scrollDir = dy > 0 ? 1 : -1;
+      lastY = y;
+
+      if (!ticking) {
+        ticking = true;
+        raf = requestAnimationFrame(read);
+      }
+
+      // Snap only after inertia settles — avoids fighting Lenis mid-gesture
+      window.clearTimeout(settle);
+      settle = window.setTimeout(() => maybeThresholdSnap(), 120);
+    };
+
+    refreshTops();
+    lastY = window.scrollY;
+    const boot = requestAnimationFrame(read);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", refreshTops, { passive: true });
+    return () => {
+      cancelAnimationFrame(boot);
+      cancelAnimationFrame(raf);
+      window.clearTimeout(settle);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", refreshTops);
+    };
+  }, [progressMv]);
+
+  return (
+    <>
+      <aside
+        className="pointer-events-none fixed top-1/2 right-3 z-40 hidden -translate-y-1/2 md:right-5 md:block lg:right-8"
+        aria-label="Section progress"
+      >
+        <div className="pointer-events-auto relative flex flex-col items-center gap-3">
+          <div
+            className="absolute top-2 bottom-2 left-1/2 w-px -translate-x-1/2 bg-line"
+            aria-hidden
+          />
+          <motion.div
+            className="absolute top-2 left-1/2 w-px origin-top -translate-x-1/2 bg-butter"
+            style={{ scaleY: progress, height: "calc(100% - 1rem)" }}
+            aria-hidden
+          />
+          {SECTIONS.map((section) => {
+            const isActive = active === section.id;
+            return (
+              <button
+                key={section.id}
+                type="button"
+                title={section.label}
+                aria-label={`Go to ${section.label}`}
+                aria-current={isActive ? "true" : undefined}
+                onClick={() => {
+                  goToSection(section.id);
+                  setHint(false);
+                }}
+                className="group relative z-10 flex h-4 w-4 items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-butter"
+              >
+                <motion.span
+                  className="block rounded-full"
+                  animate={
+                    isActive
+                      ? {
+                          width: 10,
+                          height: 10,
+                          backgroundColor: "#d9a93a",
+                          boxShadow: "0 0 14px rgba(217,169,58,0.45)",
+                        }
+                      : {
+                          width: 6,
+                          height: 6,
+                          backgroundColor: "rgba(125,135,128,0.55)",
+                          boxShadow: "0 0 0 rgba(217,169,58,0)",
+                        }
+                  }
+                  transition={{ type: "spring", stiffness: 260, damping: 26 }}
+                />
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+
+      <motion.button
+        type="button"
+        onClick={() => {
+          goToSection("menu");
+          setHint(false);
+        }}
+        initial={false}
+        animate={{ opacity: hint ? 1 : 0, y: hint ? 0 : 10 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-1/2 z-40 hidden -translate-x-1/2 flex-col items-center gap-1.5 text-[10px] tracking-[0.22em] text-mist/70 uppercase sm:flex ${
+          hint ? "" : "pointer-events-none"
+        }`}
+        aria-label="Scroll to menu"
+      >
+        <span>Scroll</span>
+        <motion.span
+          className="block h-8 w-px origin-top bg-gradient-to-b from-butter to-transparent"
+          animate={
+            hint && !reduced
+              ? { scaleY: [1, 0.55, 1], opacity: [0.9, 0.35, 0.9] }
+              : {}
+          }
+          transition={
+            hint && !reduced
+              ? { duration: 2.4, repeat: Infinity, ease: "easeInOut" }
+              : undefined
+          }
+          aria-hidden
+        />
+      </motion.button>
+    </>
+  );
+}
