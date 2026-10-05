@@ -33,6 +33,8 @@ export function Menu() {
             <img
               src={asset(PHOTOS.pastry.src)}
               alt={PHOTOS.pastry.alt}
+              width={1152}
+              height={864}
               className="aspect-[4/3] h-full w-full object-cover"
               loading="lazy"
             />

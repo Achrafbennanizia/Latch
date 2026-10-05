@@ -13,6 +13,7 @@ const LINKS = [
 
 function go(id: string) {
   return (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
     smoothScrollToId(id, 1.45);
   };
@@ -42,7 +43,7 @@ export function Nav() {
           className="display text-lg tracking-[0.08em] transition-opacity hover:opacity-80 md:text-xl"
           style={{ color: "#f6f7f5" }}
         >
-          {CONTENT.brand}
+          <span translate="no">{CONTENT.brand}</span>
         </a>
         <nav className="hidden items-center gap-7 text-sm md:flex">
           {LINKS.map((link) => (

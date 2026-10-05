@@ -13,6 +13,8 @@ export function Hero() {
       <img
         src={asset(PHOTOS.hero.src)}
         alt={PHOTOS.hero.alt}
+        width={1280}
+        height={720}
         className="absolute inset-0 h-full w-full object-cover object-[50%_42%]"
         fetchPriority="high"
       />
@@ -41,7 +43,7 @@ export function Hero() {
           transition={{ duration: 0.9, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="display mt-3 text-[clamp(4.8rem,18vw,9.5rem)] text-mist"
         >
-          {CONTENT.brand}
+          <span translate="no">{CONTENT.brand}</span>
         </motion.h1>
 
         <motion.p
@@ -62,6 +64,7 @@ export function Hero() {
           <a
             href="#menu"
             onClick={(e) => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
               e.preventDefault();
               smoothScrollToId("menu", 1.45);
             }}
@@ -72,6 +75,7 @@ export function Hero() {
           <a
             href="#catering"
             onClick={(e) => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
               e.preventDefault();
               smoothScrollToId("catering", 1.45);
             }}

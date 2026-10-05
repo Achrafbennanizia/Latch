@@ -15,7 +15,7 @@ export default function Home() {
       <SmoothScroll>
         <Nav />
         <ScrollAssist />
-        <main>
+        <main id="main" tabIndex={-1}>
           <Hero />
           <Menu />
           <Hours />

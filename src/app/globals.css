@@ -33,6 +33,7 @@
 
 html {
   /* JS threshold snap only — CSS snap fights Lenis and causes hitch */
+  color-scheme: light;
   scroll-behavior: auto;
 }
 
@@ -85,6 +86,7 @@ select {
   font-weight: 600;
   letter-spacing: -0.035em;
   line-height: 0.92;
+  text-wrap: balance;
 }
 
 .eyebrow {
@@ -318,7 +320,6 @@ select {
   background: var(--mist);
   color: var(--ink);
   padding: 0.9rem 1rem;
-  outline: none;
   transition:
     border-color 200ms var(--ease),
     box-shadow 200ms var(--ease),
@@ -329,9 +330,11 @@ select {
   border-color: color-mix(in oklab, var(--sage) 35%, var(--line));
 }
 
-.field:focus {
+.field:focus-visible {
   border-color: color-mix(in oklab, var(--sage) 55%, var(--line));
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--sage) 18%, transparent);
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
 }
 
 .field::placeholder {
@@ -363,4 +366,24 @@ select {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: 0.75rem;
+  z-index: 80;
+  transform: translateY(-150%);
+  border-radius: 999px;
+  background: #171c19;
+  color: #f6f7f5;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 2px solid #d9a93a;
+  outline-offset: 2px;
 }

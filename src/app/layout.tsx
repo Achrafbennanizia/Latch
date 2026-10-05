@@ -30,6 +30,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: "#171c19",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
@@ -42,7 +43,12 @@ export default function RootLayout({
       lang="en"
       className={`${fraunces.variable} ${outfit.variable} h-full`}
     >
-      <body className="min-h-full antialiased">{children}</body>
+      <body className="min-h-full antialiased">
+        <a className="skip-link" href="#main">
+          Skip to content
+        </a>
+        {children}
+      </body>
     </html>
   );
 }

@@ -12,6 +12,8 @@ export function Hours() {
       <img
         src={asset(PHOTOS.coffee.src)}
         alt={PHOTOS.coffee.alt}
+        width={1280}
+        height={720}
         className="absolute inset-0 h-full w-full object-cover"
         loading="lazy"
       />

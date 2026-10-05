@@ -69,6 +69,8 @@ export function Location() {
           <img
             src={asset(PHOTOS.bread.src)}
             alt={PHOTOS.bread.alt}
+            width={864}
+            height={1152}
             className="aspect-[3/4] w-full object-cover md:aspect-[4/5]"
             loading="lazy"
           />

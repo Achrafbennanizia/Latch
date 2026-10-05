@@ -80,7 +80,7 @@ export function Catering() {
                 required
                 autoComplete="name"
                 className="field !bg-mist !text-ink"
-                placeholder="Alex Rivera"
+                placeholder="Alex Rivera…"
               />
             </label>
             <label className="block sm:col-span-1">
@@ -92,15 +92,22 @@ export function Catering() {
                 type="email"
                 required
                 autoComplete="email"
+                spellCheck={false}
                 className="field !bg-mist !text-ink"
-                placeholder="alex@studio.com"
+                placeholder="alex@studio.com…"
               />
             </label>
             <label className="block">
               <span className="mb-1.5 block text-[11px] tracking-[0.16em] text-mist/55 uppercase">
                 Event date
               </span>
-              <input name="date" type="date" required className="field !bg-mist !text-ink" />
+              <input
+                name="date"
+                type="date"
+                required
+                autoComplete="on"
+                className="field !bg-mist !text-ink"
+              />
             </label>
             <label className="block">
               <span className="mb-1.5 block text-[11px] tracking-[0.16em] text-mist/55 uppercase">
@@ -112,7 +119,7 @@ export function Catering() {
                 min={1}
                 required
                 className="field !bg-mist !text-ink"
-                placeholder="24"
+                placeholder="24…"
               />
             </label>
             <label className="block sm:col-span-2">
@@ -133,9 +140,9 @@ export function Catering() {
             <button type="submit" className="btn-butter">
               {CONTENT.cateringCta}
             </button>
-            {status === "ready" && (
-              <p className="text-sm text-mist/60">Opening your mail app…</p>
-            )}
+            <p className="text-sm text-mist/60" aria-live="polite">
+              {status === "ready" ? "Opening your mail app…" : ""}
+            </p>
           </div>
         </motion.form>
       </div>
